@@ -1,0 +1,106 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Submit Your Resume</title><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"><link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"><link href="../assets/style.css?v=20261012" rel="stylesheet"><link rel="icon" href="../assets/vijay-logo.png"><style>.jchev{position:absolute;right:14px;top:50%;transform:translateY(-50%);pointer-events:none;color:#6c757d;font-size:.85rem}.jlist{position:absolute;z-index:30;left:0;right:0;top:100%;margin-top:4px;max-height:230px;overflow-y:auto;background:#fff;border:1px solid #cfd8e6;border-radius:8px;box-shadow:0 8px 24px rgba(18,49,95,.15)}.jlist div{padding:9px 14px;cursor:pointer}.jlist div:hover,.jlist div.act{background:#e8f0fe;color:#12315f}.jlist .none{color:#6c757d;cursor:default}.jlist .none:hover{background:none;color:#6c757d}</style></head><body class="pub"><div id="nav"></div>
+<main class="container py-4" style="max-width:980px">
+<div id="s1"><h2 class="fw-bold">Submit Your Resume</h2><div class="d-flex align-items-center flex-wrap gap-2 mb-2"><span class="badge bg-primary-subtle text-primary" id="ub"></span><select id="usel" class="form-select form-select-sm w-auto" aria-label="Company"><option value="Dairy">Vijay Dairy Milk</option><option value="Bhavan">Vijay Bhavan</option></select></div><p class="text-muted">Please provide your details and upload your latest resume. No account required.</p><div id="err"></div>
+<form id="frm" novalidate><input type="hidden" name="unit" id="unit" value="Dairy"><div class="row g-3">
+<div class="col-lg-6"><div class="card h-100"><div class="card-body"><div class="sect"><i class="bi bi-person-badge"></i>Personal Information</div>
+<label class="form-label">Full Name *</label><input name="name" class="form-control mb-3" placeholder="Enter your full name" required>
+<label class="form-label">Mobile Number *</label><input name="mobile" class="form-control mb-3" placeholder="+91 98765 43210" pattern="\+?\d{10,14}" required>
+<label class="form-label">Email Address *</label><input type="email" name="email" class="form-control mb-3" placeholder="Enter your email address" required>
+<div class="row g-3 mb-3"><div class="col-6"><label class="form-label">Gender <small class="text-muted">(optional)</small></label><select name="gender" class="form-select"><option value="">Select</option><option>Male</option><option>Female</option><option>Other</option></select></div><div class="col-6"><label class="form-label">Date of Birth <small class="text-muted">(optional)</small></label><input type="date" name="date_of_birth" id="dob" class="form-control" min="1950-01-01"></div></div>
+<label class="form-label">Location *</label><input name="location" class="form-control mb-3" placeholder="Enter your city / location" required>
+<label class="form-label">Address <small class="text-muted">(optional)</small></label><textarea name="address" rows="2" class="form-control mb-3" placeholder="Door no, street, area, city, pincode" maxlength="300"></textarea>
+<label class="form-label">Languages Known <small class="text-muted">(optional)</small></label><div class="d-flex flex-wrap align-items-center gap-3 mb-3" id="langs"><div class="form-check m-0"><input class="form-check-input lg" type="checkbox" value="Tamil" id="lg1"><label class="form-check-label" for="lg1">Tamil</label></div><div class="form-check m-0"><input class="form-check-input lg" type="checkbox" value="English" id="lg2"><label class="form-check-label" for="lg2">English</label></div><div class="form-check m-0"><input class="form-check-input lg" type="checkbox" value="Hindi" id="lg3"><label class="form-check-label" for="lg3">Hindi</label></div><input id="lgo" class="form-control form-control-sm w-auto" placeholder="Other languages" maxlength="60"><input type="hidden" name="languages" id="lgv"></div>
+<label class="form-label">Job Role *</label><div class="position-relative" id="jwrap"><input id="jsel" class="form-control pe-5" placeholder="Select or search job role" autocomplete="off" required><i class="bi bi-chevron-down jchev"></i><input type="hidden" name="job_role" id="jval"><div id="jlist" class="jlist d-none"></div></div></div></div></div>
+<div class="col-lg-6"><div class="card h-100"><div class="card-body"><div class="sect"><i class="bi bi-briefcase"></i>Experience Type</div>
+<label class="form-label">Experience Type *</label><select name="exp_type" id="exp_type" class="form-select mb-3" required><option value="Fresher" selected>Fresher</option><option value="Experienced">Experienced</option></select>
+<div class="sect"><i class="bi bi-list-check"></i><span id="dt">Fresher Details</span></div>
+<div id="exp" class="d-none"><label class="form-label">Total Experience (years) *</label><input type="number" step="0.1" min="0" name="total_experience" class="form-control mb-3" disabled required>
+<label class="form-label">Current/Previous Company *</label><input name="company" class="form-control mb-3" disabled required>
+<label class="form-label">Current/Previous Designation *</label><input name="designation" class="form-control mb-3" disabled required>
+<div class="row"><div class="col-6"><label class="form-label">Current Salary *</label><input type="number" min="0" name="current_salary" class="form-control mb-3" disabled required></div>
+<div class="col-6"><label class="form-label">Notice Period *</label><input name="notice_period" class="form-control mb-3" placeholder="e.g. 30 days" disabled required></div></div></div>
+<label class="form-label">Expected Salary (per year) *</label><input type="number" min="0" name="expected_salary" class="form-control mb-3" placeholder="e.g. 300000 (per year)" required>
+<label class="form-label">Highest Qualification *</label><select id="qsel" class="form-select mb-3" required><option value="">Select qualification</option><option>B.E / B.Tech</option><option>M.E / M.Tech</option><option>B.Sc</option><option>M.Sc</option><option>BCA</option><option>MCA</option><option>B.Com</option><option>M.Com</option><option>MBA</option><option>Diploma</option><option>Other</option></select><input type="hidden" name="qualification" id="qval"><input id="qoth" class="form-control mb-3 d-none" placeholder="Type your qualification" maxlength="150">
+<label class="form-label">Skills *</label><textarea name="skills" rows="2" class="form-control" placeholder="e.g. Python, Django, React" required></textarea></div></div></div>
+<div class="col-12"><div class="card"><div class="card-body"><div class="sect"><i class="bi bi-file-earmark-arrow-up"></i>Upload Resume</div>
+<div class="dz" id="dz"><i class="bi bi-cloud-arrow-up fs-1 text-primary"></i><div class="my-1">Drag &amp; Drop your resume here</div><div class="text-muted small mb-2">or</div>
+<button type="button" class="btn btn-primary" onclick="$('#pdf').click()">Choose PDF</button><input type="file" id="pdf" name="pdf" accept="application/pdf" class="d-none" required>
+<div class="small text-muted mt-2">PDF only | Max size: 5 MB</div><div id="fname" class="mt-2 fw-semibold"></div></div>
+<div class="alert alert-light border mt-3 mb-0 small"><b><i class="bi bi-info-circle"></i> Before submitting, please ensure:</b><ul class="mb-0"><li>Your resume is in PDF format</li><li>File size is less than 5 MB</li><li>All required fields are filled</li></ul></div></div></div></div>
+<div class="col-12 text-end"><button type="button" class="btn btn-primary px-4" onclick="preview()">Preview &amp; Continue <i class="bi bi-arrow-right"></i></button></div></div></form></div>
+<div id="s2" class="d-none"><a href="#" onclick="go(1);return false" class="small"><i class="bi bi-arrow-left"></i> Back to Edit</a><h2 class="fw-bold mt-2">Preview Your Resume</h2><p class="text-muted">Please review your details before submitting.</p>
+<div class="row g-3"><div class="col-lg-8"><div class="card"><div class="card-body" id="pv"></div></div></div>
+<div class="col-lg-4"><div class="card mb-3"><div class="card-body"><div class="sect"><i class="bi bi-file-earmark-text"></i>Resume</div><div class="border rounded p-3 mb-3"><i class="bi bi-file-earmark-pdf text-danger fs-3"></i> <span id="pf"></span></div>
+<div class="d-flex gap-2"><button class="btn btn-primary btn-sm flex-fill" onclick="window.open(URL.createObjectURL($('#pdf').files[0]))"><i class="bi bi-eye"></i> View PDF</button><button class="btn btn-outline-danger btn-sm flex-fill" onclick="$('#pdf').value='';$('#fname').innerHTML='';go(1)"><i class="bi bi-trash"></i> Remove</button></div></div></div>
+<div class="alert alert-primary small"><b><i class="bi bi-info-circle"></i> Important</b><br>Please verify all details are correct. You can edit the information if needed.</div>
+<div class="d-flex gap-2"><button class="btn btn-outline-primary flex-fill" onclick="go(1)">Edit Details</button><button class="btn btn-primary flex-fill" onclick="submitResume()">Submit Resume</button></div></div></div></div></main>
+<div class="overlay" id="ov"><div class="card p-4 text-center" style="width:340px"><div class="spinner-border text-primary mx-auto mb-3" style="width:3rem;height:3rem"></div><h5>Submitting your resume...</h5><p class="text-muted small mb-0">Please wait while we upload your details and resume to our system.</p></div></div>
+<div id="foot"></div><script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script><script src="../assets/config.js"></script><script src="../assets/app.js?v=20261011"></script><script src="../assets/public.js?v=20261014"></script>
+<script>pubShell();
+function setUnit(U) { curSel = U; $('#unit').value = U; $('#usel').value = U; $('#ub').innerHTML = `<i class="bi bi-${UNITS[U].icon}"></i> Applying to ${UNITS[U].name}`; document.body.classList.toggle('bh', U=='Bhavan');
+  fillJobs(U); }
+/* Job Role = searchable dropdown of the roles HR added in HR > Job Roles for the selected company */
+let roles = [], curSel = '';
+const jsel = () => $('#jsel'), jval = () => $('#jval');
+function syncJob() { jsel().setCustomValidity(jval().value ? '' : 'Please select a job role from the list'); }
+function pickRole(t) { jsel().value = t; jval().value = t; syncJob(); $('#jlist').classList.add('d-none'); }
+function showRoles() {
+  const q = jsel().value.trim().toLowerCase(), box = $('#jlist');
+  const m = roles.filter(t => t.toLowerCase().includes(q));
+  box.innerHTML = m.length ? m.map(t => `<div data-v="${esc(t)}">${esc(t)}</div>`).join('') : '<div class="none">No matching job role</div>';
+  box.classList.remove('d-none');
+}
+async function fillJobs(U) {
+  jsel().value = ''; jval().value = ''; syncJob(); roles = [];
+  const l = await loadJobRoles(U);
+  if (curSel !== U) return;                       // company changed again while loading
+  roles = [...new Set(l.map(r => r.title))];
+  if (!roles.length) roles = ['General Application'];
+}
+function initJobBox() {
+  const i = jsel(), box = $('#jlist');
+  i.addEventListener('focus', showRoles); i.addEventListener('click', showRoles);
+  i.addEventListener('input', () => { jval().value = ''; syncJob(); showRoles(); });
+  box.addEventListener('mousedown', e => { const d = e.target.closest('[data-v]'); if (d) { e.preventDefault(); pickRole(d.dataset.v); } });
+  i.addEventListener('keydown', e => { if (e.key === 'Enter') { const f = box.querySelector('[data-v]'); if (f && !box.classList.contains('d-none')) { e.preventDefault(); pickRole(f.dataset.v); } } if (e.key === 'Escape') box.classList.add('d-none'); });
+  i.addEventListener('blur', () => { box.classList.add('d-none');
+    const hit = roles.find(t => t.toLowerCase() === i.value.trim().toLowerCase()); if (hit) pickRole(hit); });   // typed text must match a listed role
+  syncJob();
+}
+initJobBox();
+
+$('#usel').onchange = e => setUnit(e.target.value); setUnit(curUnit());
+/* Apply Now from a job card: Job Role + Location come from the opening and are locked (cannot be edited) */
+const qp = new URLSearchParams(location.search), rp = qp.get('role'), lp = qp.get('loc');
+function lockField(name, val) { const f = name === 'job_role' ? jsel() : $('[name=' + name + ']'); f.value = val; f.removeAttribute('list'); f.readOnly = true; f.tabIndex = -1; f.style.background = '#e9ecef'; f.style.cursor = 'not-allowed'; f.title = 'Fixed for this job opening';
+  if (name === 'job_role') { jval().value = val; syncJob(); $('#jwrap').querySelector('.jchev').classList.add('d-none'); f.replaceWith(f.cloneNode(true)); jsel().value = val; jsel().readOnly = true; jsel().style.background = '#e9ecef'; $('#jlist').remove(); } }
+if (rp) { lockField('job_role', rp); $('#usel').disabled = true; $('#usel').classList.add('d-none'); }   // company is fixed by the job -> dropdown hidden, only the badge is shown
+if (lp) lockField('location', lp);
+const fi = $('#pdf'), dz = $('#dz');
+function setType(t) { const e = t==='Experienced'; $('#exp').classList.toggle('d-none', !e); $('#exp').querySelectorAll('input').forEach(i=>i.disabled=!e); $('#dt').textContent = t+' Details'; }
+$('#exp_type').onchange = e => setType(e.target.value);
+const syncQ = () => { const o = $('#qsel').value==='Other'; $('#qoth').classList.toggle('d-none', !o); $('#qoth').required = o; $('#qval').value = o ? $('#qoth').value.trim() : $('#qsel').value; };
+$('#qsel').onchange = () => { syncQ(); if ($('#qsel').value==='Other') $('#qoth').focus(); }; $('#qoth').oninput = syncQ;
+fi.onchange = () => { const f = fi.files[0];
+  if (f && (!f.name.toLowerCase().endsWith('.pdf') || f.size > 5*1048576)) { toast('Only PDF files up to 5 MB are allowed','danger'); fi.value=''; }
+  const g = fi.files[0]; $('#fname').innerHTML = g ? `<i class="bi bi-file-earmark-pdf text-danger"></i> ${esc(g.name)} (${(g.size/1048576).toFixed(2)} MB)` : ''; };
+dz.ondragover = e => { e.preventDefault(); dz.classList.add('over'); }; dz.ondragleave = () => dz.classList.remove('over');
+dz.ondrop = e => { e.preventDefault(); dz.classList.remove('over'); fi.files = e.dataTransfer.files; fi.onchange(); };
+const go = n => { $('#s1').classList.toggle('d-none', n!=1); $('#s2').classList.toggle('d-none', n!=2); window.scrollTo(0,0); };
+const syncLang = () => { const a = [...document.querySelectorAll('#langs .lg:checked')].map(c => c.value), o = $('#lgo').value.trim(); $('#lgv').value = a.concat(o ? [o] : []).join(', '); };
+document.querySelectorAll('#langs .lg').forEach(c => c.onchange = syncLang); $('#lgo').oninput = syncLang; $('#dob').max = new Date().toISOString().slice(0,10);
+function preview() {
+  const f = $('#frm'); syncQ(); syncLang(); if (!f.reportValidity()) return;
+  const d = Object.fromEntries(new FormData(f)), e = d.exp_type==='Experienced', file = fi.files[0];
+  const r = (l,v) => `<div class="row py-1"><div class="col-5 text-muted">${l}</div><div class="col-7 fw-semibold">${esc(v)||'-'}</div></div>`;
+  $('#pv').innerHTML = `<div class="sect"><i class="bi bi-person-badge"></i>Personal Details</div>${r('Full Name',d.name)}${r('Mobile',d.mobile)}${r('Email',d.email)}${r('Gender',d.gender)}${r('Date of Birth',d.date_of_birth?d.date_of_birth.split('-').reverse().join('-'):'')}${r('Location',d.location)}${r('Address',d.address)}${r('Languages Known',d.languages)}${r('Job Role',d.job_role)}<hr>
+  <div class="sect"><i class="bi bi-briefcase"></i>Professional Details</div>${r('Experience Type',d.exp_type)}${e?r('Total Experience',d.total_experience+' years')+r('Company',d.company)+r('Designation',d.designation)+r('Current Salary','₹ '+(+d.current_salary).toLocaleString('en-IN'))+r('Notice Period',d.notice_period):''}
+  ${r('Expected Salary','₹ '+(+d.expected_salary).toLocaleString('en-IN'))}${r('Qualification',d.qualification)}${r('Skills',d.skills)}`;
+  $('#pf').innerHTML = `${esc(file.name)}<br><small class="text-muted">${(file.size/1048576).toFixed(2)} MB</small>`; go(2);
+}
+async function submitResume() {
+  $('#ov').classList.add('show');
+  try { const d = await api('/resumes/', {method:'POST', body:new FormData($('#frm')), noauth:true});
+    location = `../employee/success.html?rid=${d.resume_id}&name=${encodeURIComponent(d.name)}${new URLSearchParams(location.search).get('embed')?'&embed=1':''}`;
+  } catch(e) { $('#ov').classList.remove('show'); go(1); $('#err').innerHTML = `<div class="alert alert-danger">${fe(e)}</div>`; }
+}</script></body></html>

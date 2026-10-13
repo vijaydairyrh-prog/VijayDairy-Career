@@ -1,0 +1,337 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Resume Review</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"><link href="../assets/style.css?v=20261012" rel="stylesheet"><link rel="icon" href="../assets/vijay-logo.png"><style>
+.rd-bc{display:flex;align-items:center;gap:8px;font-size:.9rem;color:#8ea0c0;margin-bottom:16px}
+.rd-bc a{text-decoration:none}
+.rd-bc i{font-size:.7rem}
+.rd-head{display:flex;align-items:center;gap:22px;flex-wrap:wrap;padding:20px 22px}
+.rd-av{width:76px;height:76px;border-radius:50%;background:#2f4fd0;color:#fff;font-size:1.7rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex:none}
+.rd-name{font-size:1.3rem;font-weight:700;line-height:1.2;margin-bottom:4px}
+.rd-sub{font-size:.92rem;display:flex;gap:8px;align-items:center;color:#8ea0c0}
+.rd-sep{width:1px;align-self:stretch;background:#1c2947}
+.rd-lbl{font-size:.82rem;color:#6ea8ff;margin-bottom:4px}
+.rd-val{font-weight:500;word-break:break-word}
+.rd-title{font-weight:700;font-size:1.1rem;display:flex;align-items:center;gap:10px;margin-bottom:18px}
+.rd-title i{font-size:1.3rem;color:#6ea8ff}
+.rd-lbl2{font-weight:600;margin-bottom:6px;display:block}
+.rd-sticky{position:sticky;top:12px}
+.rd-pdf{border:1px solid #1c2947;border-radius:10px;overflow:hidden}
+.rd-pdf-bar{display:flex;justify-content:space-between;align-items:center;padding:8px 14px;background:#0b1326;font-size:.9rem}
+.rd-pdf iframe{width:100%;height:calc(100vh - 150px);min-height:560px;border:0;background:#fff;display:block}
+.rd-nopdf{padding:40px 14px;text-align:center;color:#8ea0c0}
+.rd-box{border:1px solid #1c2947;border-radius:10px;background:#0b1326;overflow:hidden}
+.rd-mhead{padding:10px 14px;font-weight:600;border-bottom:1px solid #1c2947;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.rd-mbody{padding:12px 14px;font-size:.88rem}
+.rd-pre{white-space:pre-wrap;word-break:break-word;font-family:inherit;margin:8px 0 0;max-height:260px;overflow:auto;color:inherit}
+.rd-mact{display:flex;gap:8px;justify-content:flex-end;padding:10px 14px;border-top:1px solid #1c2947}
+.rd-info{display:flex;gap:10px;padding:6px 0;font-size:.92rem}.rd-info>span:first-child{width:130px;flex:none;color:#8ea0c0}
+body.light .rd-bc,body.light .rd-sub,body.light .rd-info>span:first-child,body.light .rd-nopdf{color:#64748b}
+body.light .rd-sep,body.light .rd-pdf,body.light .rd-box,body.light .rd-mhead,body.light .rd-mact{border-color:#e2e8f0}
+body.light .rd-pdf-bar,body.light .rd-box{background:#f8fafc}
+body.light .rd-lbl,body.light .rd-title i{color:#1e5aa8}
+@media(max-width:767px){.rd-sep{display:none}.rd-pdf iframe{height:480px;min-height:0}.rd-sticky{position:static}}
+</style></head><body>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script><script src="../assets/config.js"></script><script src="../assets/app.js?v=20261011"></script><script>
+layout('resume-detail');
+const RID = new URLSearchParams(location.search).get('id');
+let cur = null, mvTimer = null;
+$('#content').innerHTML = `<h4 class="fw-bold mb-1">Resume Review</h4>
+<nav class="rd-bc"><a href="../hr/dashboard.html"><i class="bi bi-house-door fs-6"></i></a><i class="bi bi-chevron-right"></i><a href="../hr/resumes.html">Resumes</a><span>/</span><span id="bcName">...</span></nav>
+<div id="rdErr"></div><div id="rdHead"></div>
+<div class="row g-3 mt-0"><div class="col-xl-5 d-flex flex-column gap-3"><div class="card"><div class="card-body" id="rdLeft"></div></div><div class="card"><div class="card-body" id="rdRight"></div></div></div>
+<div class="col-xl-7"><div class="card rd-sticky"><div class="card-body p-2" id="rdPdf"></div></div></div></div>`;
+
+/* email -> opens a new mail (Gmail compose on desktop, mail app on phone); phone -> tel: (dialer on phone) */
+const isMob = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+const mailL = v => !v ? '-' : isMob ? mailA(v) : `<a href="https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(v)}" target="_blank" rel="noopener" title="Send email">${esc(v)}</a>`;
+const telL = v => !v ? '-' : `<a href="tel:${esc(String(v).replace(/[^\d+]/g,''))}" title="Call">${esc(v)}</a>`;
+const money = v => v ? '₹ ' + Number(v).toLocaleString('en-IN') : '';
+const val = v => (v === null || v === undefined || v === '') ? '-' : esc(String(v));
+const unitName = u => u == 'Bhavan' ? 'Vijay Bhavan' : 'Vijay Dairy Milk';
+const mmss = n => Math.floor(n / 60) + ':' + String(n % 60).padStart(2, '0');
+const IV_FIELDS = {
+  Online: [['interview_date','Interview Date','date'],['interview_time','Interview Time','time'],['meeting_link','Meeting Link','url']],
+  Offline: [['interview_date','Interview Date','date'],['interview_time','Interview Time','time'],['venue','Venue','text'],['address','Address','text'],['contact_person','Contact Person','text']]
+};
+function stopMv() { if (mvTimer) { clearInterval(mvTimer); mvTimer = null; } }
+
+/* ---------- header card ---------- */
+function renderHead(r) {
+  const ini = r.name.trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+  $('#bcName').textContent = r.name;
+  $('#rdHead').innerHTML = `<div class="card"><div class="card-body rd-head">
+    <div class="rd-av">${esc(ini)}</div>
+    <div><div class="rd-name">${esc(r.name)}</div><div class="rd-sub"><i class="bi bi-envelope"></i>${mailL(r.email)}</div><div class="rd-sub"><i class="bi bi-telephone"></i>${telL(r.mobile)}</div></div>
+    <div class="rd-sep"></div><div><div class="rd-lbl">Resume ID</div><div class="fw-semibold">${esc(r.resume_id)}</div></div>
+    <div class="rd-sep"></div><div><div class="rd-lbl">Status</div><div>${badge(r.status)}</div></div>
+    <div class="ms-auto d-flex gap-2 flex-wrap"><button class="btn btn-outline-primary" onclick="viewPdf(${r.id})"><i class="bi bi-eye me-1"></i>View Resume PDF</button><button class="btn btn-success" onclick="dlPdf(${r.id},'${esc(r.resume_id)}')"><i class="bi bi-download me-1"></i>Download Resume</button></div>
+  </div></div>`;
+}
+
+/* ---------- left: details + PDF preview ---------- */
+function renderLeft(r) {
+  const exp = r.exp_type == 'Experienced';
+  const f = (l, v, c = 'col-sm-6') => `<div class="${c}"><div class="rd-lbl">${l}</div><div class="rd-val">${v}</div></div>`;
+  $('#rdLeft').innerHTML = `<div class="rd-title"><i class="bi bi-person"></i>Personal &amp; Application Details<button class="btn btn-sm btn-outline-primary ms-auto" onclick="editOn()"><i class="bi bi-pencil-square me-1"></i>Edit</button></div>
+  <div class="row g-3">
+    ${f('Full Name', val(r.name))}${f('Company', unitName(r.unit))}${f('Education', val(r.qualification))}
+    ${f('Email', mailL(r.email))}${f('Experience', val(r.exp_type + (r.total_experience ? ' (' + r.total_experience + ' yrs)' : '')))}${f('Skills', val(r.skills))}
+    ${f('Mobile', telL(r.mobile))}${f('Location', val(r.location))}${f('Gender', val(r.gender))}
+    ${f('Job Role', val(r.job_role))}${f('Applied Date', fd(r.created_at))}${f('Date of Birth', val(r.date_of_birth ? r.date_of_birth.split('-').reverse().join('-') : ''))}
+    ${f('Languages Known', val(r.languages))}${f('Expected Salary', val(money(r.expected_salary)))}${f('Address', val(r.address))}
+    ${exp ? f('Current Company', val(r.company)) + f('Designation', val(r.designation)) + f('Current Salary', val(money(r.current_salary))) + f('Notice Period', val(r.notice_period)) : ''}
+  </div>`;
+}
+/* ---------- edit candidate details ---------- */
+const QUALS = ['B.E / B.Tech','M.E / M.Tech','B.Sc','M.Sc','BCA','MCA','B.Com','M.Com','MBA','Diploma'];
+function editOn() { renderEdit(cur); }
+function editOff() { renderLeft(cur); }
+function renderEdit(r) {
+  const i = (l, id, v, t = 'text', x = '') => `<div class="col-sm-6"><label class="rd-lbl" for="e_${id}">${l}</label><input id="e_${id}" type="${t}" class="form-control form-control-sm" value="${esc(v ?? '')}" ${x}></div>`;
+  const exp = r.exp_type == 'Experienced';
+  $('#rdLeft').innerHTML = `<div class="rd-title"><i class="bi bi-pencil-square"></i>Edit Details</div>
+  <form id="editFrm" novalidate><div class="row g-3">
+    ${i('Full Name *', 'name', r.name, 'text', 'required maxlength="120"')}${i('Mobile *', 'mobile', r.mobile, 'text', 'required pattern="\\+?\\d{10,14}" title="10 to 14 digits, optional + at start"')}
+    ${i('Email *', 'email', r.email, 'email', 'required')}
+    <div class="col-sm-6"><label class="rd-lbl" for="e_gender">Gender</label><select id="e_gender" class="form-select form-select-sm">${['', 'Male', 'Female', 'Other'].map(g => `<option value="${g}" ${g == (r.gender || '') ? 'selected' : ''}>${g || 'Select'}</option>`).join('')}</select></div>
+    ${i('Date of Birth', 'date_of_birth', r.date_of_birth, 'date', `min="1950-01-01" max="${new Date().toISOString().slice(0, 10)}"`)}${i('Location *', 'location', r.location, 'text', 'required maxlength="120"')}
+    ${i('Job Role *', 'job_role', r.job_role, 'text', 'required maxlength="120"')}${i('Languages Known', 'languages', r.languages, 'text', 'maxlength="150"')}
+    <div class="col-12"><label class="rd-lbl" for="e_address">Address</label><textarea id="e_address" rows="2" maxlength="300" class="form-control form-control-sm">${esc(r.address || '')}</textarea></div>
+    <div class="col-sm-6"><label class="rd-lbl" for="e_exp_type">Experience Type *</label><select id="e_exp_type" class="form-select form-select-sm"><option ${exp ? '' : 'selected'}>Fresher</option><option ${exp ? 'selected' : ''}>Experienced</option></select></div>
+    ${i('Expected Salary (per year)', 'expected_salary', r.expected_salary ? Math.round(r.expected_salary) : '', 'number', 'min="0"')}
+    <div class="col-12 ${exp ? '' : 'd-none'}" id="e_expBox"><div class="row g-3">
+      ${i('Total Experience (years) *', 'total_experience', r.total_experience, 'number', 'min="0" step="0.1"')}${i('Current/Previous Company *', 'company', r.company, 'text', 'maxlength="150"')}
+      ${i('Designation *', 'designation', r.designation, 'text', 'maxlength="150"')}${i('Current Salary *', 'current_salary', r.current_salary ? Math.round(r.current_salary) : '', 'number', 'min="0"')}
+      ${i('Notice Period *', 'notice_period', r.notice_period, 'text', 'maxlength="50" placeholder="e.g. 30 days"')}</div></div>
+    <div class="col-sm-6"><label class="rd-lbl" for="e_qualification">Highest Qualification *</label><input id="e_qualification" list="qlist" class="form-control form-control-sm" required maxlength="150" value="${esc(r.qualification || '')}"><datalist id="qlist">${QUALS.map(q => `<option value="${q}">`).join('')}</datalist></div>
+    <div class="col-sm-6"><label class="rd-lbl" for="e_skills">Skills *</label><textarea id="e_skills" rows="2" required class="form-control form-control-sm">${esc(r.skills || '')}</textarea></div>
+  </div>
+  <div class="d-flex gap-2 mt-3"><button type="button" class="btn btn-primary btn-sm px-4" id="e_save"><i class="bi bi-check2 me-1"></i>Save Changes</button><button type="button" class="btn btn-outline-secondary btn-sm px-4" onclick="editOff()">Cancel</button></div></form>`;
+  $('#e_exp_type').onchange = e => {
+    const x = e.target.value == 'Experienced'; $('#e_expBox').classList.toggle('d-none', !x);
+    ['total_experience', 'company', 'designation', 'current_salary', 'notice_period'].forEach(k => $('#e_' + k).required = x);
+  };
+  if (exp) ['total_experience', 'company', 'designation', 'current_salary', 'notice_period'].forEach(k => $('#e_' + k).required = true);
+  $('#e_save').onclick = saveEdit;
+}
+async function saveEdit() {
+  const f = $('#editFrm'); if (!f.reportValidity()) return;
+  const g = k => $('#e_' + k).value.trim(), ex = $('#e_exp_type').value == 'Experienced';
+  const body = {name: g('name'), mobile: g('mobile'), email: g('email'), gender: $('#e_gender').value, date_of_birth: g('date_of_birth') || null, location: g('location'), address: g('address'),
+    languages: g('languages'), job_role: g('job_role'), exp_type: $('#e_exp_type').value, expected_salary: g('expected_salary') || null, qualification: g('qualification'), skills: g('skills'),
+    total_experience: ex ? (g('total_experience') || null) : null, company: ex ? g('company') : '', designation: ex ? g('designation') : '',
+    current_salary: ex ? (g('current_salary') || null) : null, notice_period: ex ? g('notice_period') : ''};
+  const b = $('#e_save'); b.disabled = true;
+  try { const d = await api('/resumes/' + cur.id + '/', {method:'PATCH', body}); cur = d; toast('Details updated'); renderHead(d); renderLeft(d); }
+  catch (e) { toast(fe(e), 'danger'); b.disabled = false; }
+}
+function renderPdf(r) {
+  $('#rdPdf').innerHTML = `<div class="rd-pdf"><div class="rd-pdf-bar"><span><i class="bi bi-file-earmark-pdf text-danger me-1"></i>Resume PDF</span><button class="btn btn-sm btn-outline-secondary" onclick="viewPdf(${r.id})" title="Open in new tab"><i class="bi bi-arrows-fullscreen"></i></button></div>
+  <div id="rdPdfBox"><div class="rd-nopdf"><div class="spinner-border spinner-border-sm me-2"></div>Loading PDF...</div></div></div>`;
+  blobUrl(r.id, true).then(u => { $('#rdPdfBox').innerHTML = `<iframe src="${u}#navpanes=0&zoom=page-width" title="Resume PDF"></iframe>`; })
+    .catch(() => { $('#rdPdfBox').innerHTML = '<div class="rd-nopdf"><i class="bi bi-file-earmark-x fs-1"></i><div>Resume PDF is not available</div></div>'; });
+}
+
+/* ---------- right: status ---------- */
+const infoRow = (l, v) => `<div class="rd-info"><span>${l}</span><span>${v}</span></div>`;
+const rightTitle = '<div class="rd-title"><i class="bi bi-clipboard-check"></i>Update Application Status</div>';
+
+function mailPendingHtml(m) {
+  return `<div class="rd-box mt-3"><div class="rd-mhead"><span><i class="bi bi-envelope me-2"></i>Mail will be sent in <b id="mvLeft">${mmss(m.seconds_left)}</b></span><small class="fw-normal text-muted">Cancel pannalaam / ippove anuppalaam</small></div>
+    <div class="rd-mbody"><div><b>To:</b> ${mailA(cur.email)}</div><div><b>Subject:</b> ${esc(m.subject)}</div><pre class="rd-pre">${esc(m.message)}</pre></div>
+    <div class="rd-mact"><button class="btn btn-sm btn-outline-danger" id="mvCancel">Cancel Mail</button><button class="btn btn-sm btn-success" id="mvSend">Send Mail Now</button></div></div>`;
+}
+function bindMailPending(r) {
+  const m = r.pending_email; stopMv(); if (!m) return;
+  const endAt = Date.now() + m.seconds_left * 1000;
+  const lock = v => ['#mvCancel', '#mvSend'].forEach(q => { const b = $(q); if (b) b.disabled = v; });
+  mvTimer = setInterval(async () => {
+    const left = Math.max(0, Math.ceil((endAt - Date.now()) / 1000)), el = $('#mvLeft');
+    if (el) el.textContent = mmss(left);
+    if (left <= 0) { stopMv(); try { await api('/email-history/?page=1'); await refreshResume(r.id); } catch (e) {} }   // listing triggers the dispatcher
+  }, 1000);
+  $('#mvSend').onclick = async () => {
+    lock(true); stopMv();
+    try { const x = await api('/email-history/' + m.id + '/send/', {method:'POST', body:{}});
+      toast(x.status == 'Sent' ? 'Mail sent to candidate' : 'Mail sending failed', x.status == 'Sent' ? 'success' : 'danger'); await refreshResume(r.id); }
+    catch (e) { toast(fe(e), 'danger'); lock(false); bindMailPending(r); }
+  };
+  $('#mvCancel').onclick = async () => {
+    if (!confirm('Indha mail-a cancel pannalaamaa? Candidate-ku mail anuppave maatom.')) return;
+    lock(true); stopMv();
+    try { await api('/email-history/' + m.id + '/cancel/', {method:'POST'}); toast('Mail cancelled. Candidate-ku anuppala.'); }
+    catch (e) { toast(fe(e), 'danger'); }
+    try { await refreshResume(r.id); } catch (e) { lock(false); }
+  };
+}
+async function refreshResume(id) { afterStatus(await api('/resumes/' + id + '/')); }
+
+/* ===================== 3-step hiring flow =====================
+   Step 1  Review      : Shortlisted / Interview Online|Offline   (this page)
+   Step 2  Interview   : HR presses "Finish" (this page or Interviews page)       -> Interview Finished
+   Step 3  Decision    : Selected (email possible) / Rejected / Hold (NO email)   (this page)            */
+const MAILABLE = ['Shortlisted', 'Online', 'Offline', 'Selected'];   // Rejected / Hold never send a mail
+const STEPS = ['Review & Status', 'Interview', 'Final Decision'];
+let goBase = 'Save Status';
+
+const stepTitle = t => `<div class="rd-title"><i class="bi bi-clipboard-check"></i>${t}</div>`;
+function stepper(stage) {
+  const idx = {review: 0, interview: 1, decision: 2, done: 3}[stage];
+  return `<div class="d-flex align-items-center gap-2 mb-3 flex-wrap">${STEPS.map((n, i) => {
+    const st = i < idx ? 'done' : i === idx ? 'cur' : 'todo';
+    const cls = st == 'done' ? 'bg-success' : st == 'cur' ? 'bg-primary' : 'bg-secondary';
+    return `<span class="d-flex align-items-center gap-1"><span class="badge rounded-pill ${cls}">${st == 'done' ? '<i class="bi bi-check-lg"></i>' : i + 1}</span><small class="${st == 'cur' ? 'fw-semibold' : 'text-muted'}">${n}</small></span>${i < 2 ? '<i class="bi bi-chevron-right small text-muted"></i>' : ''}`;
+  }).join('')}</div>`;
+}
+async function historyHtml(r) {
+  let h = []; try { h = (await api('/status-history/?resume=' + r.id)).results || []; } catch (e) {}
+  if (!h.length) return '';
+  return `<div class="rd-lbl2 mt-4">Status History</div>` + h.map(x => `<div class="rd-info"><span>${fd(x.created_at)}</span><span>${esc(x.previous_status)} → <b>${esc(x.new_status)}</b>${x.email_sent ? ' <i class="bi bi-envelope-check text-success" title="Email sent"></i>' : ''}${x.description ? '<br><small class="text-muted">' + esc(x.description) + '</small>' : ''}</span></div>`).join('');
+}
+const resetHtml = r => r.status_locked ? `<div class="mt-4"><button class="btn btn-sm btn-outline-danger" id="rvReset"><i class="bi bi-trash"></i> Delete Status Update</button><div class="small text-muted mt-1">Thappa update panniteenga-na delete pannunga. Ella steps-um (interview, mail, history) delete aagi status "New"-ku thirumbidum.</div></div>` : '';
+const reopenHtml = r => (r.status === 'Rejected' || r.status === 'Hold') ? `<div class="mt-4"><button class="btn btn-primary" id="rvReopen"><i class="bi bi-arrow-repeat me-1"></i>Use Again (Re-open)</button><div class="small text-muted mt-1">Intha employee-a thirumba use panna: status "New"-ku maarum. Appuram Shortlist / Interview / Decision first-la irundhu pannalaam. Pazhaya history appadiye irukkum.</div></div>` : '';
+function bindReopen(r) {
+  const b = $('#rvReopen'); if (!b) return;
+  b.onclick = async () => {
+    if (!confirm('Intha employee-a thirumba use pannalaamaa?\n\nStatus "New"-ku maarum, pudhusa process start pannalaam.')) return;
+    b.disabled = true;
+    try { const d = await api('/resumes/' + r.id + '/reopen/', {method: 'POST', body: {}}); toast('Employee re-opened. Ippo Step 1-la irundhu update pannalaam.'); afterStatus(d); }
+    catch (e) { toast(fe(e), 'danger'); b.disabled = false; }
+  };
+}
+function bindReset(r) {
+  const b = $('#rvReset'); if (!b) return;
+  b.onclick = async () => {
+    if (!confirm('Ella status updates-um delete panni "New"-ku mathava?\n\nInterview, mail, history ellam delete aagum.')) return;
+    try { const d = await api('/resumes/' + r.id + '/reset-status/', {method: 'POST', body: {}}); toast('Status update deleted'); afterStatus(d); }
+    catch (e) { toast(fe(e), 'danger'); }
+  };
+}
+
+/* live preview of the mail that will be queued (same text the server builds) */
+function draftMail() {
+  const st = $('#stSel') && $('#stSel').value; if (!st) return null;
+  const desc = ($('#stDesc').value || '').trim(), subject = `Application Update - ${cur.job_role} (${st})`;
+  if (st === 'Selected') {
+    const S = [`Dear ${cur.name},`, '', `Congratulations! We are pleased to inform you that you have been selected for the position of ${cur.job_role}.`, ''];
+    if (desc) S.push('Message from HR:', desc, '');
+    S.push('Please contact the HR department if you have any questions.', '', 'Regards,', 'HR Department');
+    return {subject, body: S.join('\n')};
+  }
+  const L = [`Dear ${cur.name},`, '', 'Your employment status has been updated in our records.', '', `Employee Name: ${cur.name}`, `Status: ${st}`];
+  if (IV_FIELDS[st]) { L.push('', `Interview Type: ${st}`); IV_FIELDS[st].forEach(([k, l]) => { const v = ($('#st_' + k).value || '').trim(); L.push(`${l.replace('Interview ', '')}: ${v || '—'}`); }); }
+  if (desc) L.push('', 'Message from HR:', desc);
+  L.push('', 'Please contact the HR department if you have any questions.', '', 'Regards,', 'HR Department');
+  return {subject, body: L.join('\n')};
+}
+function refreshDraft() {
+  const box = $('#stDraft'); if (!box) return;
+  const mail = $('#stMail'), on = !!(mail && mail.checked && !mail.disabled), d = draftMail();
+  box.classList.toggle('d-none', !(on && d));
+  if (on && d) box.querySelector('.rd-mbody').innerHTML = `<div><b>Subject:</b> ${esc(d.subject)}</div><pre class="rd-pre">${esc(d.body)}</pre>`;
+  const go = $('#stGo'); if (go && !go.disabled) go.innerHTML = `<i class="bi bi-send me-2"></i>${goBase}${on ? ' &amp; Send Email' : ''}`;
+}
+/* email checkbox: only for statuses that may send a mail. Rejected / Hold -> a "no email" note instead */
+function setMailWrap(r, st) {
+  const w = $('#stMailWrap'); if (!w) return;
+  if (!st) w.innerHTML = '';
+  else if (MAILABLE.includes(st)) {
+    const mailed = r.email_already_sent;
+    w.innerHTML = `<div class="form-check my-3"><input class="form-check-input" type="checkbox" id="stMail" ${mailed ? 'disabled' : 'checked'}><label class="form-check-label" for="stMail">Send email notification to employee${mailed ? ' (already mailed once)' : ''}</label></div>`;
+    $('#stMail').onchange = refreshDraft;
+  } else w.innerHTML = `<div class="alert alert-secondary py-2 my-3 small"><i class="bi bi-envelope-slash me-1"></i><b>${st}</b> status-ku employee-ku email / message anuppa mudiyathu.</div>`;
+  refreshDraft();
+}
+const commonFields = (ph) => `<label class="rd-lbl2" for="stDesc">Description <small class="fw-normal text-muted">(${ph})</small></label>
+    <textarea id="stDesc" rows="3" maxlength="500" class="form-control" placeholder="${ph == 'optional note' ? 'Add a note...' : 'Add a message for this candidate...'}"></textarea>
+    <div class="text-end small text-muted" id="stCnt">0/500</div>
+    <div id="stMailWrap"></div>
+    <div id="stDraft" class="rd-box d-none"><div class="rd-mhead"><span><i class="bi bi-envelope me-2"></i>Email Preview</span></div><div class="rd-mbody"></div></div>
+    <div class="d-flex gap-2 mt-3"><button class="btn btn-primary flex-fill py-2" id="stGo"></button><button class="btn btn-outline-secondary px-4" onclick="location='../hr/resumes.html'">Cancel</button></div>`;
+function bindCommon(r) {
+  $('#rdRight').oninput = e => { if (e.target.id === 'stDesc') $('#stCnt').textContent = e.target.value.length + '/500'; refreshDraft(); };
+  $('#stGo').onclick = async () => {
+    const st = $('#stSel').value; if (!st) return toast('Status select pannunga', 'warning');
+    const m = $('#stMail'), body = {status: st, description: $('#stDesc').value.trim(), send_email: !!(m && m.checked && !m.disabled)};
+    for (const [k] of (IV_FIELDS[st] || [])) { const v = $('#st_' + k).value.trim(); if (!v) return toast('Fill all interview details', 'warning'); body[k] = v; }
+    const b = $('#stGo'); b.disabled = true;
+    try { const d = await api('/resumes/' + r.id + '/status/', {method: 'POST', body});
+      toast('Status updated to ' + st + (d.email_state === 'queued' ? ' (email queued)' : d.email_state === 'duplicate_skipped' ? ' (email already sent earlier, skipped)' : ''));
+      if (st === 'Online' || st === 'Offline') { toast('Interview fix aachu. Interviews page-ku poren...'); setTimeout(() => location.href = '../hr/interviews.html', 800); }   // interview scheduled -> Interviews page
+      else afterStatus(d); }
+    catch (e) { toast(fe(e), 'danger'); b.disabled = false; }
+  };
+}
+
+async function renderRight(r) {
+  stopMv();
+  const box = $('#rdRight'), stage = r.stage || 'review';
+  const pend = r.pending_email ? mailPendingHtml(r.pending_email) : '';
+  const hist = await historyHtml(r);
+  if (stage === 'review') {
+    goBase = 'Save Status';
+    const opts = [['Shortlisted', 'Shortlisted'], ['Online', 'Interview - Online'], ['Offline', 'Interview - Offline']].filter(([v]) => v !== r.status)
+      .map(([v, l]) => `<option value="${v}">${l}</option>`).join('');
+    box.innerHTML = stepTitle('Step 1 · Review &amp; Update Status') + stepper(stage) + infoRow('Current Status', badge(r.status)) + `
+      <label class="rd-lbl2 mt-2" for="stSel">Application Status <span class="text-danger">*</span></label>
+      <select id="stSel" class="form-select mb-1"><option value="">Select status</option>${opts}</select>
+      <div class="small text-muted mb-3">Interview select pannina, antha employee <b>Interviews</b> page-la show aagum (Step 2).</div>
+      <div id="stIv"></div>${commonFields('message to candidate, optional')}` + pend + hist + resetHtml(r);
+    $('#stSel').onchange = e => {
+      $('#stIv').innerHTML = (IV_FIELDS[e.target.value] || []).map(([k, l, t]) => `<label class="rd-lbl2" for="st_${k}">${l} <span class="text-danger">*</span></label><input type="${t}" id="st_${k}" class="form-control mb-3">`).join('');
+      setMailWrap(r, e.target.value);
+    };
+    bindCommon(r); refreshDraft();
+  } else if (stage === 'interview') {
+    let iv = null; try { iv = (await api('/interviews/?resume=' + r.id)).results?.[0]; } catch (e) {}
+    box.innerHTML = stepTitle('Step 2 · Interview') + stepper(stage) + infoRow('Current Status', badge(r.status))
+      + (iv ? infoRow('Type', esc(iv.type)) + infoRow('Date', fd(iv.date)) + infoRow('Time', esc(iv.time))
+        + (iv.type == 'Online' ? infoRow('Meeting Link', iv.meeting_link ? `<a href="${esc(iv.meeting_link)}" target="_blank" rel="noopener">${esc(iv.meeting_link)}</a>` : '-')
+          : infoRow('Venue', val(iv.venue)) + infoRow('Address', val(iv.address)) + infoRow('Contact Person', val(iv.contact_person))) : '')
+      + `<label class="rd-lbl2 mt-3" for="ivNote">Interview Note <small class="fw-normal text-muted">(optional)</small></label>
+         <textarea id="ivNote" rows="3" maxlength="500" class="form-control" placeholder="Interview feedback..."></textarea>
+         <div class="d-flex gap-2 mt-3"><button class="btn btn-success flex-fill py-2" id="ivFinish"${iv ? '' : ' disabled'}><i class="bi bi-check2-circle me-2"></i>Interview Finished</button><a class="btn btn-outline-secondary px-4" href="../hr/interviews.html">Interviews</a></div>
+         <div class="small text-muted mt-1">Interview mudinjathum "Interview Finished" press pannunga. Appuram Step 3 (Select / Reject / Hold) open aagum. Intha step-la email anuppadhu.</div>` + pend + hist + resetHtml(r);
+    $('#ivFinish').onclick = async () => {
+      if (!confirm('Interview mudinjuduchaa? Finish-nu mark pannalaamaa?')) return;
+      const b = $('#ivFinish'); b.disabled = true;
+      try { await api('/interviews/' + iv.id + '/finish/', {method: 'POST', body: {description: $('#ivNote').value.trim()}}); toast('Interview finished. Ippo Final Decision pannalaam.'); afterStatus(await api('/resumes/' + r.id + '/')); }
+      catch (e) { toast(fe(e), 'danger'); b.disabled = false; }
+    };
+  } else if (stage === 'decision' || r.status === 'Rejected') {   // Step 3, or Hold / Rejected called for another interview
+    goBase = 'Save Decision';
+    const IVB = [['Online', 'primary', 'camera-video', 'Interview Online'], ['Offline', 'primary', 'geo-alt', 'Interview Offline']];
+    const DEC = [['Selected', 'success', 'check-circle', 'Select'], ['Rejected', 'danger', 'x-circle', 'Reject'], ['Hold', 'warning', 'pause-circle', 'Hold']];
+    const D = (r.status === 'Rejected' ? IVB : r.status === 'Hold' ? DEC.concat(IVB) : DEC).filter(([v]) => v !== r.status);
+    box.innerHTML = stepTitle(r.status === 'Rejected' ? 'Rejected · Interview Again' : 'Step 3 · Final Decision') + stepper(r.status === 'Rejected' ? 'decision' : stage) + infoRow('Current Status', badge(r.status))
+      + (r.status === 'Hold' ? '<div class="alert alert-warning py-2 small mb-3">Intha employee <b>Hold</b>-la irukkaanga. Ippo Select / Reject pannalaam, illa <b>Interview Online / Offline</b> schedule panni mail anuppi thirumba interview vaikkalaam.</div>' : '')
+      + (r.status === 'Rejected' ? '<div class="alert alert-danger py-2 small mb-3">Intha employee <b>Rejected</b>. HR-ku epa venumnaalum <b>Interview Online / Offline</b> schedule panni mail anuppalaam (6 month wait HR-ku kidaiyaadhu).</div>' : '')
+      + `<div class="rd-lbl2">${r.status === 'Rejected' ? 'Interview' : 'Decision / Next'} <span class="text-danger">*</span></div><input type="hidden" id="stSel">
+      <div class="d-flex gap-2 mb-3 flex-wrap" id="dcBtns">${D.map(([v, c, i, l]) => `<button type="button" class="btn btn-outline-${c} flex-fill py-2" data-v="${v}"><i class="bi bi-${i} me-1"></i>${l}</button>`).join('')}</div>
+      <div id="stIv"></div>`
+      + commonFields('message to candidate, optional') + pend + reopenHtml(r) + hist + resetHtml(r);
+    document.querySelectorAll('#dcBtns button').forEach(b => b.onclick = () => {
+      document.querySelectorAll('#dcBtns button').forEach(x => x.classList.remove('active')); b.classList.add('active');
+      $('#stSel').value = b.dataset.v;
+      $('#stIv').innerHTML = (IV_FIELDS[b.dataset.v] || []).map(([k, l, t]) => `<label class="rd-lbl2" for="st_${k}">${l} <span class="text-danger">*</span></label><input type="${t}" id="st_${k}" class="form-control mb-3">`).join('');
+      setMailWrap(r, b.dataset.v);
+    });
+    bindCommon(r); refreshDraft();
+  } else {   // done: Selected / Rejected
+    box.innerHTML = stepTitle('Final Decision Done') + stepper(stage) + infoRow('Final Status', badge(r.status))
+      + infoRow('Email', r.pending_email ? 'Queued (sending soon)' : r.status === 'Selected' ? ((await api('/email-history/?resume=' + r.id).catch(() => ({results: []}))).results?.some(e => e.status === 'Sent') ? 'Selection mail sent' : 'Not sent') : 'Not applicable (Rejected-ku mail anuppa mudiyathu)')
+      + pend + reopenHtml(r) + hist + resetHtml(r);
+  }
+  if (r.pending_email) bindMailPending(r);
+  bindReopen(r); bindReset(r);
+}
+function afterStatus(d) { cur = d; renderHead(d); renderRight(d); }
+
+/* ---------- load ---------- */
+(async () => {
+  if (!RID) { $('#rdErr').innerHTML = '<div class="alert alert-warning">No resume selected. <a href="../hr/resumes.html">Go to All Resumes</a></div>'; return; }
+  try { cur = await api('/resumes/' + RID + '/'); }
+  catch (e) { $('#rdErr').innerHTML = `<div class="alert alert-danger">${fe(e)} <a href="../hr/resumes.html">Back to All Resumes</a></div>`; return; }
+  renderHead(cur); renderLeft(cur); renderPdf(cur); renderRight(cur);
+})();
+window.addEventListener('pagehide', stopMv);
+</script></body></html>

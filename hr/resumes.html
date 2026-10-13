@@ -1,0 +1,269 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>All Resumes</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"><link href="../assets/style.css?v=20261012" rel="stylesheet"><link rel="icon" href="../assets/vijay-logo.png"><style>
+.fbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:10px;margin-bottom:16px;border-radius:14px;background:#0f1830;border:1px solid #1c2947}
+.fsearch{flex:1 1 320px;display:flex;align-items:center;min-width:0;height:38px;border:1px solid #223255;border-radius:8px;background:#0b1326;overflow:hidden}
+.fsearch>i{padding:0 10px;color:#8ea0c0}
+.fsearch input{flex:1;min-width:0;height:100%;background:transparent;border:0;outline:0;color:#e2e8f0;font-size:.9rem}
+.fclear{border:0;border-left:1px solid #223255;background:transparent;color:#8ea0c0;height:100%;padding:0 12px}
+.fgo{border:0;height:100%;padding:0 16px;background:#7c83f5;color:#fff;font-weight:500}
+.fbar label{color:#8ea0c0;font-size:.9rem;margin:0}
+.fdate{height:38px;border-radius:8px;border:1px solid #223255;background:#0b1326;color:#e2e8f0;padding:0 10px;color-scheme:dark}
+.fdate:focus,.fsearch:focus-within{border-color:#6366f1;box-shadow:0 0 0 2px rgba(99,102,241,.35);outline:0}
+.fexp{height:38px;padding:0 16px;border:0;border-radius:8px;background:#10b981;color:#fff;font-weight:500;white-space:nowrap}
+.fexp:disabled{opacity:.7}
+body.light .fbar{background:#fff;border-color:#e2e8f0}
+body.light .fsearch,body.light .fdate{background:#fff;border-color:#cbd5e1;color:#0f172a;color-scheme:light}
+body.light .fsearch input{color:#0f172a}
+body.light .fbar label,body.light .fsearch>i,body.light .fclear{color:#64748b}
+.act-btn{border:1px solid #cbd5e1;background:transparent;color:#64748b;border-radius:8px;width:34px;height:32px;padding:0;line-height:1}
+.act-btn:hover,.act-btn.show{background:#e8f0fe;color:#12315f;border-color:#93b4f5}
+.act-dd .dropdown-menu{min-width:160px;font-size:.9rem}
+.act-dd .dropdown-item{display:flex;align-items:center;width:100%}
+body:not(.light) .act-btn{border-color:#223255;color:#8ea0c0}
+body:not(.light) .act-btn:hover,body:not(.light) .act-btn.show{background:#16213b;color:#fff}
+</style><style id="rowFit">
+@media(max-width:991px){
+  body.hr .card:has(> #tbl){overflow:hidden;background:var(--bs-body-bg);border:1px solid var(--bs-border-color);box-shadow:none;border-radius:12px}
+  #tbl{overflow-x:hidden!important}
+  #tbl table{display:table!important;table-layout:fixed;width:100%;font-size:9.5px;line-height:1.25}
+  #tbl table thead{display:table-header-group!important}
+  #tbl table tbody{display:table-row-group!important}
+  #tbl table tr{display:table-row!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;box-shadow:none!important;background:transparent!important}
+  #tbl table th,#tbl table td{display:table-cell!important;text-align:left!important}
+  #tbl table td::before{display:none!important}
+  #tbl table td.m-empty{text-align:center!important}
+  #tbl th,#tbl td{padding:7px 3px;white-space:normal;overflow-wrap:break-word;vertical-align:middle}
+  #tbl th{font-size:7px;letter-spacing:0;white-space:normal}
+  #tbl th:nth-child(1){width:15%}#tbl th:nth-child(2){width:13%}#tbl th:nth-child(3){width:7%}#tbl th:nth-child(4){width:19%}
+  #tbl th:nth-child(5){width:13%}#tbl th:nth-child(6){width:13%}#tbl th:nth-child(7){width:11%}#tbl th:nth-child(8){width:9%}
+  #tbl .badge{font-size:7.5px;padding:3px 3px;white-space:normal}
+  #tbl small{font-size:8px}
+  #tbl .act-btn{width:24px;height:24px;font-size:11px}
+  #tbl td:first-child,#tbl th:first-child{padding-left:6px}
+  #tbl td{border-bottom:1px solid var(--bs-border-color)!important}
+  #tbl tr:last-child td{border-bottom:0!important}
+}
+@media(max-width:576px){
+  .fbar{gap:8px;padding:8px}
+  .fsearch{flex:1 1 100%}
+  .fbar label{font-size:.8rem}
+  .fdate{flex:1 1 0;min-width:0;padding:0 6px;font-size:.8rem}
+  .fexp{flex:1 1 100%}
+}
+</style>
+</head><body>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script><script src="../assets/config.js"></script><script src="../assets/app.js?v=20261011"></script><script>
+
+async function reopenResume(id) {
+  if (!confirm('Intha employee-a thirumba use pannalaamaa?\n\nStatus "New"-ku maarum, pudhusa process start pannalaam.')) return;
+  try { await api('/resumes/' + id + '/reopen/', {method:'POST', body:{}}); toast('Employee re-opened. New list-ku poren...'); setTimeout(() => location.href = '../hr/resumes.html?status=New', 700); } catch (e) { toast(fe(e), 'danger'); }
+}
+const openResume = id => location = '../hr/resume-detail.html?id=' + id;
+if (new URLSearchParams(location.search).get('view')) { location.replace('../hr/resume-detail.html?id=' + new URLSearchParams(location.search).get('view')); }   // old ?view= links (dashboard / interviews)
+layout('resumes'); let page = 1;
+const urlP = new URLSearchParams(location.search);
+const STAGE_TABS = ['Shortlisted','Interview Finished','Selected','Hold','Rejected'], RECENT_DAYS = 1;   // status pages get tabs
+const STAGE_COL = {'Shortlisted':'Shortlisted On','Interview Finished':'Finished On','Selected':'Selected On','Hold':'Hold On','Rejected':'Rejected On'};
+const TAB_LABEL = {pending:'Pending Decision', recent:'Recent', all:'All'};
+const tabKeys = STAGE_TABS.includes(urlP.get('status')) ? ['recent','all'] : [];   // Selected page > Recent also carries the finished candidates waiting for Select / Reject / Hold
+const hasTabs = tabKeys.length > 0; let tab = tabKeys[0];
+const curStatus = () => hasTabs && tab == 'pending' ? 'Interview Finished' : urlP.get('status');
+const isNew = r => { const st = urlP.get('status'); if (['Interview Finished','Shortlisted'].includes(st) && r.status == st) return true; if (!r.stage_at) return false;   // NEW = reached this stage today, or still waiting for HR's next update
+  const d = new Date(r.stage_at), t = new Date(); return d.toDateString() == t.toDateString(); };
+function setTab(t) { tab = t; page = 1; tabKeys.forEach(k => $('#tb_' + k).classList.toggle('active', k == t)); load(); return false; }
+async function tabCounts() {   // numbers on the tabs: Pending Decision (n) | Recent (n) | All (n)
+  if (!hasTabs) return;
+  try {
+    const res = await Promise.all(tabKeys.map(k => { const q = filters(k); q.set('page', 1); return api('/resumes/?' + q); }));
+    tabKeys.forEach((k, i) => { $('#tb_' + k).textContent = TAB_LABEL[k] + ' (' + res[i].count + ')'; });
+  } catch (e) {}
+}
+$('#content').innerHTML = `<h4>All Resumes</h4><div class="fbar">
+  <div class="fsearch"><i class="bi bi-search"></i>
+    <input id="f_q" placeholder="Search name, email, mobile, ID, role, location..." onkeydown="if(event.key==='Enter'){page=1;load()}">
+    <button type="button" class="fclear" onclick="clearQ()" title="Clear"><i class="bi bi-x-lg"></i></button>
+    <button type="button" class="fgo" onclick="page=1;load()"><i class="bi bi-search me-1"></i>Search</button></div>
+  <label>From</label><input type="date" id="f_start" class="fdate" onchange="page=1;load()">
+  <label>To</label><input type="date" id="f_end" class="fdate" onchange="page=1;load()">
+  <button id="exp" type="button" class="fexp" onclick="exportXlsx()" title="Export to Excel"><i class="bi bi-file-earmark-excel me-1"></i>Export</button>
+</div>
+${hasTabs ? `<ul class="nav nav-pills mb-3" id="rtabs">${tabKeys.map((k, n) => `<li class="nav-item"><a href="#" class="nav-link ${n == 0 ? 'active' : ''}" id="tb_${k}" onclick="return setTab('${k}')">${TAB_LABEL[k]}</a></li>`).join('')}</ul>` : ''}
+<div class="card"><div class="table-responsive" id="tbl"></div></div><div id="pg"></div>`;
+if (urlP.get('q')) $('#f_q').value = urlP.get('q');
+const clearQ = () => { $('#f_q').value = ''; page = 1; load(); };
+const filters = (tk = tab) => { const p = new URLSearchParams();
+  ['status','exp_type','job_role','location'].forEach(k => { if (urlP.get(k)) p.set(k, urlP.get(k)); });   // sidebar status links (?status=New)
+  ['q','start','end'].forEach(k => { const v = $('#f_'+k).value.trim(); if (v) p.set(k, v); });
+  if (hasTabs && tk == 'recent') p.set('recent', RECENT_DAYS);   // Recent tab = only the last 7 days of this stage
+  if (hasTabs && tk == 'pending') { p.set('status', 'Interview Finished'); p.set('pending', 1); }   // finished, waiting for final decision
+  return p; };
+const loadXlsx = () => window.XLSX ? Promise.resolve() : new Promise((ok, no) => { const s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'; s.onload = ok; s.onerror = () => no({detail:'Excel library load aagala. Internet check pannunga.'}); document.head.append(s); });
+async function exportXlsx() {
+  const b = $('#exp'), old = b.innerHTML; b.disabled = true; b.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Exporting';
+  try {
+    await loadXlsx();
+    const p = filters(), rows = []; let pg = 1, d;
+    do { p.set('page', pg++); d = await api('/resumes/?' + p); rows.push(...d.results); } while (d.next);
+    if (!rows.length) { toast('Export panna data illa', 'warning'); return; }
+    const data = rows.map((r, i) => ({'S.No': i + 1, 'Resume ID': r.resume_id, 'Name': r.name, 'Mobile': r.mobile, 'Email': r.email, 'Gender': r.gender, 'Date of Birth': r.date_of_birth ?? '', 'Location': r.location, 'Address': r.address, 'Languages Known': r.languages, 'Job Role': r.job_role,
+      'Experience Type': r.exp_type, 'Total Experience (yrs)': r.total_experience ?? '', 'Company': r.company, 'Designation': r.designation, 'Current Salary': r.current_salary ?? '',
+      'Expected Salary': r.expected_salary ?? '', 'Qualification': r.qualification, 'Skills': r.skills, 'Notice Period': r.notice_period, 'Status': r.status, 'Applied On': fd(r.created_at)}));
+    const ws = XLSX.utils.json_to_sheet(data);
+    ws['!cols'] = Object.keys(data[0]).map(k => ({wch: Math.min(40, Math.max(k.length, ...data.map(x => String(x[k]).length)) + 2)}));
+    const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Resumes');
+    XLSX.writeFile(wb, 'resumes_' + new Date().toISOString().slice(0, 10) + '.xlsx');
+    toast(rows.length + ' resumes Excel-ku export aachu');
+  } catch (e) { toast(fe(e), 'danger'); } finally { b.disabled = false; b.innerHTML = old; }
+}
+async function load() {
+  const p = filters(); p.set('page', page);
+  const d = await api('/resumes/?' + p);
+  window.rs = {}; d.results.forEach(r => window.rs[r.id] = r);
+  const finList = curStatus() === 'Interview Finished';   // Finished / Pending Decision list: extra 'Decision Details' menu item
+  const dateCol = hasTabs ? (urlP.get('status') == 'Selected' && tab == 'recent' ? 'Date' : STAGE_COL[curStatus()]) : 'Date';
+  $('#tbl').innerHTML = table(['Name','Company','Job Role','Experience','Location','Status', dateCol,'Action'], d.results.map(r => [
+    `${esc(r.name)}<br><small class="text-muted">${r.resume_id}</small>`, `<span class="badge ${r.unit=='Bhavan'?'bg-success-subtle text-success':'bg-primary-subtle text-primary'}">${r.unit=='Bhavan'?'Vijay Bhavan':'Vijay Dairy Milk'}</span>`, esc(r.job_role), r.exp_type + (r.total_experience ? ` (${r.total_experience} yrs)` : ''), esc(r.location), badge(r.status), fd((hasTabs || urlP.get('status') == 'New') && r.stage_at ? r.stage_at : r.created_at),
+    `<div class="dropdown act-dd"><button type="button" class="btn btn-sm act-btn" data-bs-toggle="dropdown" data-bs-popper-config='{"strategy":"fixed"}' aria-expanded="false" title="Actions"><i class="bi bi-three-dots-vertical"></i></button>
+      <ul class="dropdown-menu dropdown-menu-end">
+        ${(finList || r.status == 'Interview Finished') ? `<li><a class="dropdown-item fw-semibold" href="../hr/resume-detail.html?id=${r.id}"><i class="bi bi-clipboard-check me-2"></i>${(r.stage == 'decision' || r.status == 'Rejected') ? 'Update Status (Final Decision)' : 'Decision Details'}</a></li>` : ''}
+        ${r.status == 'Rejected' || r.status == 'Hold' ? `<li><button type="button" class="dropdown-item fw-semibold" onclick="reopenResume(${r.id})"><i class="bi bi-arrow-repeat me-2"></i>Use Again (Re-open)</button></li>` : ''}
+        <li><button type="button" class="dropdown-item" onclick="openResume(${r.id})"><i class="bi bi-eye me-2"></i>View</button></li>
+        <li><button type="button" class="dropdown-item" onclick="viewPdf(${r.id})"><i class="bi bi-file-earmark-pdf me-2"></i>View PDF</button></li>
+        <li><button type="button" class="dropdown-item" onclick="dlPdf(${r.id},'${r.resume_id}')"><i class="bi bi-download me-2"></i>Download</button></li>
+      </ul></div>`]));
+  $('#tbl table')?.classList.remove('m-stack');   // mobile: keep the normal table layout (no card-stack)
+  pager(d, n => { page = n; load(); });
+  tabCounts();
+}
+load().then(async () => { const v = urlP.get('view'); if (!v) return;
+  try { const r = await api('/resumes/' + v + '/'); window.rs[r.id] = r; viewResume(r.id); } catch (e) { toast(fe(e), 'danger'); } });
+</script>
+<style>
+.rv-card{background:#fff;color:#1f2937;border-radius:12px;overflow:hidden;display:flex;flex-direction:column;max-height:calc(100vh - 3.5rem)}
+.rv-top,.rv-act{flex:none}
+.rv-top{background:#1e3a6e;color:#fff;padding:14px 20px;display:flex;justify-content:space-between;align-items:center}
+.rv-top small{opacity:.8}
+.rv-sec{padding:10px 20px 0;font-weight:700;color:#1e3a6e;font-size:13px;text-transform:uppercase;letter-spacing:.5px}
+.rv-row{display:flex;padding:5px 20px;font-size:14px}.rv-row span:first-child{width:150px;color:#64748b;flex:none}.rv-row span:last-child{font-weight:600;word-break:break-word}
+.rv-row .badge{width:auto!important;flex:none;color:#fff!important;font-size:.8rem;font-weight:600;padding:.4em .75em}
+.rv-row .badge.bg-warning,.rv-row .badge.bg-info,.rv-top .badge.bg-warning,.rv-top .badge.bg-info{color:#000!important}
+.rv-row .form-control,.rv-row .form-select{font-weight:400}
+.rv-logo{height:34px;background:#fff;border-radius:6px;padding:3px;margin-right:12px}
+.rv-main{display:flex;align-items:stretch;flex:1 1 auto;min-height:0;overflow-y:auto}
+.rv-left{flex:1;max-width:100%;min-width:0;padding-bottom:6px}
+.rv-act{padding:12px 20px;background:#f8fafc;border-top:1px solid #e5e7eb;display:flex;gap:8px;justify-content:flex-end}
+.mv-box{margin:10px 20px 4px;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;background:#fff}
+.mv-head{background:#fff7ed;border-bottom:1px solid #fed7aa;color:#9a3412;padding:8px 14px;font-size:13px;font-weight:600;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.mv-sub{padding:8px 14px 0;font-size:13px;color:#64748b}.mv-sub b{color:#1f2937}
+.mv-body{padding:10px 14px 12px;font-size:14px;line-height:1.6;white-space:pre-wrap;word-break:break-word;max-height:240px;overflow-y:auto}
+.mv-foot{text-align:center;font-size:13px;padding:0 14px 10px}
+.mv-act{padding:10px 14px;background:#f8fafc;border-top:1px solid #e5e7eb;display:flex;gap:8px;justify-content:flex-end}
+</style>
+<div class="modal fade" id="rvModal" tabindex="-1"><div class="modal-dialog modal-lg modal-dialog-centered"><div class="modal-content" style="background:transparent;border:0"><div class="modal-body p-0"><div class="rv-card">
+<div class="rv-top"><div class="d-flex align-items-center"><img src="../assets/vijay-logo.png" alt="Vijay" class="rv-logo"><div><div class="fw-bold fs-5" id="rvName"></div><small id="rvId"></small></div></div><div class="d-flex align-items-center gap-2"><span id="rvStatus"></span><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div></div>
+<div class="rv-main"><div class="rv-left"><div id="rvBody"></div>
+<div id="rvStatusBox"></div></div></div>
+<div class="rv-act"><button class="btn btn-sm btn-outline-secondary" id="rvPdf">View PDF</button><button class="btn btn-sm btn-outline-success" id="rvDl">Download</button><button class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button></div>
+</div></div></div></div></div>
+<script>
+function viewResume(id){
+  const r = window.rs[id]; if(!r) return;
+  const row = (l,v) => `<div class="rv-row"><span>${l}</span><span>${(v===null||v===undefined||v==='')?'-':esc(String(v))}</span></div>`;
+  const money = v => v ? '₹ ' + Number(v).toLocaleString('en-IN') : '';
+  const exp = r.exp_type=='Experienced';
+  $('#rvName').textContent = 'Resume'; $('#rvId').textContent = r.resume_id + ' • ' + (r.unit=='Bhavan'?'Vijay Bhavan':'Vijay Dairy Milk'); $('#rvStatus').innerHTML = badge(r.status);
+  $('#rvBody').innerHTML = `<div class="rv-sec pt-3">Personal</div>${row('Name',r.name)}<div class="rv-row"><span>Mobile</span><span>${telA(r.mobile)}</span></div><div class="rv-row"><span>Email</span><span>${mailA(r.email)}</span></div>${row('Gender',r.gender)}${row('Date of Birth',r.date_of_birth?r.date_of_birth.split('-').reverse().join('-'):'')}${row('Location',r.location)}${row('Address',r.address)}${row('Languages Known',r.languages)}${row('Job Role',r.job_role)}
+    <div class="rv-sec pt-3">Professional</div>${row('Experience',r.exp_type + (r.total_experience ? ' ('+r.total_experience+' yrs)' : ''))}${exp?row('Company',r.company)+row('Designation',r.designation)+row('Current Salary',money(r.current_salary))+row('Notice Period',r.notice_period):''}${row('Expected Salary',money(r.expected_salary))}${row('Qualification',r.qualification)}${row('Skills',r.skills)}${row('Applied On',fd(r.created_at))}`;
+  $('#rvPdf').onclick = () => viewPdf(r.id); $('#rvDl').onclick = () => dlPdf(r.id, r.resume_id);
+  renderStatusBox(r);
+  bootstrap.Modal.getOrCreateInstance('#rvModal').show();
+}
+const IV_FIELDS = {
+  Online: [['interview_date','Interview Date','date'],['interview_time','Interview Time','time'],['meeting_link','Meeting Link','url']],
+  Offline: [['interview_date','Interview Date','date'],['interview_time','Interview Time','time'],['venue','Venue','text'],['address','Address','text'],['contact_person','Contact Person','text']]
+};
+let mvTimer = null;
+const mmss = n => Math.floor(n / 60) + ':' + String(n % 60).padStart(2, '0');
+function stopMv() { if (mvTimer) { clearInterval(mvTimer); mvTimer = null; } }
+document.addEventListener('hidden.bs.modal', e => { if (e.target.id === 'rvModal') stopMv(); });
+async function refreshResume(id) {
+  const d = await api('/resumes/' + id + '/'); afterStatus(d);
+}
+function mailPreviewHtml(m) {
+  return `<div class="rv-sec pt-3">Email Preview</div><div class="mv-box">
+    <div class="mv-head"><span>Mail will be sent in <span id="mvLeft">${mmss(m.seconds_left)}</span></span><span class="fw-normal small">Cancel pannalaam / ippove anuppalaam</span></div>
+    <div class="mv-sub"><b>To:</b> ${mailA(window.rs[m.resume_id]?.email)}<br><b>Subject:</b> ${esc(m.subject)}</div>
+    <div class="mv-body">${esc(m.message)}</div>
+    <div class="mv-foot"><a href="mailto:connecthr@vijaymilk.in">connecthr@vijaymilk.in</a></div>
+    <div class="mv-act"><button class="btn btn-sm btn-outline-danger" id="mvCancel">Cancel Mail</button><button class="btn btn-sm btn-success" id="mvSend">Send Mail Now</button></div></div>`;
+}
+function bindMailPreview(r) {
+  const m = r.pending_email; stopMv(); if (!m) return;
+  const endAt = Date.now() + m.seconds_left * 1000;
+  const lock = v => ['#mvCancel', '#mvSend'].forEach(q => { const b = $(q); if (b) b.disabled = v; });
+  mvTimer = setInterval(async () => {
+    const left = Math.max(0, Math.ceil((endAt - Date.now()) / 1000)), el = $('#mvLeft');
+    if (el) el.textContent = mmss(left);
+    if (left <= 0) { stopMv(); try { await api('/email-history/?page=1'); await refreshResume(r.id); } catch (e) {} }   // listing triggers the dispatcher
+  }, 1000);
+  $('#mvSend').onclick = async () => {
+    lock(true); stopMv();
+    try { const x = await api('/email-history/' + m.id + '/send/', {method:'POST', body:{}});
+      toast(x.status == 'Sent' ? 'Mail sent to candidate' : 'Mail sending failed', x.status == 'Sent' ? 'success' : 'danger'); await refreshResume(r.id); }
+    catch (e) { toast(fe(e), 'danger'); lock(false); bindMailPreview(r); }
+  };
+  $('#mvCancel').onclick = async () => {
+    if (!confirm('Indha mail-a cancel pannalaamaa? Candidate-ku mail anuppave maatom.')) return;
+    lock(true); stopMv();
+    try { await api('/email-history/' + m.id + '/cancel/', {method:'POST'}); toast('Mail cancelled. Candidate-ku anuppala.'); }
+    catch (e) { toast(fe(e), 'danger'); }
+    try { await refreshResume(r.id); } catch (e) { lock(false); }   // always re-read the real state from the server (never show a stale preview)
+  };
+}
+async function renderStatusBox(r) {
+  stopMv();
+  const box = $('#rvStatusBox');
+  const row = (l,v) => `<div class="rv-row"><span>${l}</span><span>${v}</span></div>`;
+  const inp = (l,id,t) => `<div class="rv-row"><span>${l} *</span><span><input type="${t}" id="${id}" class="form-control form-control-sm"></span></div>`;
+  box.innerHTML = `<div class="rv-sec pt-3">Status</div>${row('Current Status', badge(r.status))}`;
+  if (r.stage && r.stage !== 'review') {   // Step 2 / Step 3 are done on the full review page
+    box.innerHTML += `<div class="rv-row"><span></span><span><a class="btn btn-sm btn-primary" href="../hr/resume-detail.html?id=${r.id}">Open Review Page (next step)</a></span></div>`; return;
+  }
+  if (r.status_locked) {
+    let h = null; try { h = (await api('/status-history/?resume=' + r.id)).results?.[0]; } catch (e) {}
+    box.innerHTML = `<div class="rv-sec pt-3">Status</div>${row('Current Status', badge(r.status))}`
+      + (h ? row('Description', h.description ? esc(h.description) : '-') + row('Updated On', fd(h.created_at || h.updated_at)) + row('Updated By', esc(h.hr_name || '-')) + row('Email', r.pending_email ? 'Queued (sending soon)' : h.email_sent ? 'Sent to candidate' : 'Not sent') : '')
+      + `<div class="rv-row"><span></span><span><button class="btn btn-sm btn-outline-danger" id="rvReset"><i class="bi bi-trash"></i> Delete Status Update</button> <div class="small text-muted fw-normal mt-1">Oru thadava mattum update panna mudiyum. Maatha venumna delete pannunga.</div></span></div>`;
+    if (r.pending_email) { box.insertAdjacentHTML('beforeend', mailPreviewHtml({...r.pending_email, resume_id: r.id})); bindMailPreview(r); }
+    $('#rvReset').onclick = async () => {
+      if (!confirm('Indha status update-a delete panni "New"-ku mathava?')) return;
+      try { const d = await api('/resumes/' + r.id + '/reset-status/', {method:'POST', body:{}}); toast('Status update deleted'); afterStatus(d); }
+      catch (e) { toast(fe(e), 'danger'); }
+    };
+    return;
+  }
+  const opts = ['Shortlisted','Online','Offline'].filter(s => s !== r.status).map(s => `<option>${s}</option>`).join('');
+  box.innerHTML = `<div class="rv-sec pt-3">Status</div>${row('Current Status', badge(r.status))}
+    <div class="rv-row"><span>Update To</span><span><select id="stSel" class="form-select form-select-sm"><option value="">Select status</option>${opts}</select></span></div>
+    <div id="stIv"></div>
+    <div id="stMore" class="d-none"><div class="rv-row"><span>Description</span><span><textarea id="stDesc" rows="2" class="form-control form-control-sm" placeholder="Message to candidate (optional)"></textarea></span></div>
+    <div class="rv-row"><span>Email</span><span><label class="form-check-label small fw-normal"><input class="form-check-input me-1" type="checkbox" id="stMail" ${r.email_already_sent ? 'disabled' : 'checked'}>Send email${r.email_already_sent ? ' (already mailed once)' : ''}</label></span></div>
+    <div class="rv-row"><span></span><span><button class="btn btn-sm btn-primary" id="stGo">Update Status</button></span></div></div>`;
+  $('#stSel').onchange = e => { $('#stMore').classList.toggle('d-none', !e.target.value); $('#stIv').innerHTML = (IV_FIELDS[e.target.value] || []).map(([k,l,t]) => inp(l, 'st_' + k, t)).join(''); };
+  $('#stGo').onclick = async () => {
+    const st = $('#stSel').value; if (!st) return toast('Status select pannunga', 'warning');
+    const body = {status: st, description: $('#stDesc').value.trim(), send_email: $('#stMail').checked};
+    for (const [k] of (IV_FIELDS[st] || [])) { const v = $('#st_' + k).value.trim(); if (!v) return toast('Fill all interview details', 'warning'); body[k] = v; }
+    const b = $('#stGo'); b.disabled = true;
+    try { const d = await api('/resumes/' + r.id + '/status/', {method:'POST', body});
+      toast('Status updated to ' + st + (d.email_state === 'queued' ? ' (email queued)' : d.email_state === 'duplicate_skipped' ? ' (email already sent earlier, skipped)' : ''));
+      if (st === 'Online' || st === 'Offline') setTimeout(() => location.href = '../hr/interviews.html', 800);   // interview scheduled -> Interviews page
+      else afterStatus(d); }
+    catch (e) { toast(fe(e), 'danger'); b.disabled = false; }
+  };
+}
+function afterStatus(d) {
+  window.rs[d.id] = d; $('#rvStatus').innerHTML = badge(d.status); renderStatusBox(d); load();
+}
+</script>
+</body></html>

@@ -1,0 +1,62 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Dashboard</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"><link href="../assets/style.css?v=20261012" rel="stylesheet"><link rel="icon" href="../assets/vijay-logo.png"></head><body>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script><script src="../assets/config.js"></script><script src="../assets/app.js?v=20261011"></script><script>
+layout('dashboard');
+const ld = u => new Promise(r => { const s = document.createElement('script'); s.src = u; s.onload = r; document.head.append(s); });
+const hm = t => { const [h, m] = String(t).split(':'); return `${h % 12 || 12}:${m} ${h >= 12 ? 'PM' : 'AM'}`; }, ini = n => (n||'?')[0].toUpperCase();
+const ICON = {New:['plus-lg','#14b8a6'],Shortlisted:['star-fill','#6366f1'],Online:['camera-video-fill','#06b6d4'],Offline:['geo-alt-fill','#94a3b8'],'Interview Finished':['flag-fill','#0ea5e9'],Selected:['check-lg','#10b981'],Rejected:['x-lg','#f43f5e'],Hold:['pause-fill','#f59e0b']};
+const SC = {Online:'success',Offline:'danger'};
+const spark = (a, c) => { const m = Math.max(...a, 1), w = 70, h = 28, pts = a.slice(-7).map((v,i,r)=>`${(i*w/(r.length-1)).toFixed(1)},${(h-2-(v/m)*(h-6)).toFixed(1)}`).join(' ');
+  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><polyline points="${pts}" fill="none" stroke="${c}" stroke-width="2" stroke-linejoin="round"/></svg>`; };
+const pct = a => { const l = a.slice(-7).reduce((x,y)=>x+y,0), p = a.slice(0,7).reduce((x,y)=>x+y,0);
+  const v = p ? Math.round((l-p)*100/p) : (l ? 100 : 0); return `<span class="pc ${v>=0?'text-success':'text-danger'}">${v>=0?'↑':'↓'} ${Math.abs(v)}%</span>`; };
+const iv = i => `<div class="li"><span class="avatar">${ini(i.candidate)}</span><div class="flex-grow-1"><b>${esc(i.candidate)}</b><br><small class="text-muted">${esc(i.job_role)}<br>${fd(i.date)} · ${hm(i.time)}</small></div><span class="badge rounded-pill bg-${SC[i.type]}-subtle text-${SC[i.type]}">${i.type}</span></div>`;
+(async () => {
+  const [d] = await Promise.all([api('/dashboard/'), ld('https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js')]);
+  const c = d.counts, T = d.trend, nm = $('#un')?.textContent || 'HR', sk = d.skills;
+  const sum2 = (a, b) => a.map((v, i) => v + (b[i] || 0));
+  const iv_n = (c.Online||0) + (c.Offline||0);
+  // [label, value, icon, color, status-link, trend-array, small-subtext]
+  const cards = [
+    ['Total Resumes', d.total, 'file-earmark-text-fill', '#2563eb', '', T.Total, ''],
+    ['New', c.New, ...ICON.New, 'New', T.New, ''],
+    ['Shortlisted', c.Shortlisted, ...ICON.Shortlisted, 'Shortlisted', T.Shortlisted, ''],
+    ['Interview', iv_n, 'camera-video-fill', '#06b6d4', '../hr/interviews.html', sum2(T.Online, T.Offline), `${c.Online||0} Online · ${c.Offline||0} Offline`],
+    ['Finished', c['Interview Finished'], ...ICON['Interview Finished'], 'Interview Finished', T['Interview Finished'] || [], ''],
+    ['Selected', c.Selected, ...ICON.Selected, 'Selected', T.Selected, ''],
+    ['Hold', c.Hold, ...ICON.Hold, 'Hold', T.Hold || [], ''],
+    ['Rejected', c.Rejected, ...ICON.Rejected, 'Rejected', T.Rejected, '']];
+  const kcHref = x => x[4].startsWith('/') ? x[4] : `../hr/resumes.html${x[4] ? '?status=' + encodeURIComponent(x[4]) : ''}`;
+  const P = (t, body, link='', cls='') => `<div class="card h-100"><div class="card-body ${cls}"><div class="ptitle"><span>${t}</span>${link}</div>${body}</div></div>`;
+  const RC = ['#6366f1','#06b6d4','#f59e0b','#10b981','#f43f5e','#94a3b8'], rt = d.by_role.reduce((a,r)=>a+r.count,0) || 1;
+  const va = '<a href="../hr/resumes.html" class="small">View all</a>', vi = '<a href="../hr/interviews.html" class="small">View all</a>';
+  $('#content').innerHTML = `<h3 class="mb-0">Dashboard</h3><p class="text-muted">Welcome back, ${esc(nm)}! The pool is growing and diverse; here's your detailed view.</p>
+  <div class="kpis mb-3">${cards.map(x=>`<a class="kc card" style="--c:${x[3]}" href="${kcHref(x)}"><span class="ic"><i class="bi bi-${x[2]}"></i></span><span class="kt"><span class="lb">${x[0]}</span><span class="nm">${x[1]||0} ${pct(x[5])}</span>${x[6]?`<span class="sub">${x[6]}</span>`:''}</span></a>`).join('')}</div>
+  <div class="dg"><div class="dgl"><div class="row g-3">
+    <div class="col-12">${P('<span><i class="bi bi-graph-up me-2 text-primary"></i>Resume Talent Pool Analytics</span>', sk.top.length ? `<div class="row g-3"><div class="col-lg-7"><div class="small text-muted mb-2">Skills distribution by experience level</div><div style="height:240px"><canvas id="stk"></canvas></div></div><div class="col-lg-5"><div class="small text-muted mb-2 text-center">Overall skills competency</div><div style="height:240px"><canvas id="rad"></canvas></div></div></div>` : '<span class="text-muted">Skills charts appear once resumes are submitted.</span>')}</div>
+    <div class="col-12">${P('Recent Resumes', `<div class="table-responsive rr">${table(['Name','Job Role','Experience','Location','Status','Date',''], d.recent_resumes.map(r=>[`<b>${esc(r.name)}</b>`,esc(r.job_role),r.exp_type=='Fresher'?'Fresher':(r.total_experience||0)+' Years',esc(r.location),badge(r.status),fd(r.created_at),`<a href="../hr/resumes.html?view=${r.id}" class="fs-5"><i class="bi bi-eye"></i></a>`]))}</div>`, va)}</div>
+    <div class="col-md-5">${P('<span><i class="bi bi-lightning-charge-fill me-1 text-primary"></i>Quick Actions</span>',`<div class="qa d-flex flex-wrap gap-2">
+      <a class="btn" style="background:#2563eb" target="_blank" href="../employee/resume-register.html"><i class="bi bi-plus-lg me-1"></i>Add Resume</a>
+      <a class="btn" style="background:#10b981" href="../hr/resumes.html?status=New"><i class="bi bi-file-earmark-text me-1"></i>View New</a>
+      <a class="btn" style="background:#8b5cf6" href="../hr/interviews.html"><i class="bi bi-calendar-event me-1"></i>Today's Interviews</a>
+      <a class="btn" style="background:#06b6d4" href="../hr/email-history.html"><i class="bi bi-envelope me-1"></i>Send Email</a>
+      <a class="btn" style="background:#ec4899" href="../hr/reports.html"><i class="bi bi-bar-chart-fill me-1"></i>Generate Report</a></div>`)}</div>
+    <div class="col-md-7">${P('Job Role Distribution',`<div class="d-flex align-items-center gap-2"><div style="width:130px;height:130px;position:relative"><canvas id="don"></canvas><div class="position-absolute top-50 start-50 translate-middle text-center lh-1"><b class="fs-4">${d.total}</b><br><small class="text-muted">Total</small></div></div>
+      <div class="small flex-grow-1">${d.by_role.map((r,i)=>`<div class="d-flex justify-content-between"><span><i class="bi bi-circle-fill me-1" style="color:${RC[i]};font-size:.6rem"></i>${esc(r.job_role)}</span><span>${Math.round(r.count*100/rt)}%</span></div>`).join('')}</div></div>`)}</div>
+  </div></div>
+  <div class="dgr"><div class="row g-3">
+    <div class="col-12">${P('<span><i class="bi bi-calendar-event me-1"></i>Upcoming Interviews</span>', d.upcoming_interviews.map(iv).join('')||'<span class="text-muted">None</span>', vi)}</div>
+    <div class="col-12">${P("<span><i class='bi bi-calendar-check me-1'></i>Today's Interviews</span>", `<div class="table-responsive">${table(['Time','Candidate','Role','Type'], d.today_interviews.map(i=>[hm(i.time),esc(i.candidate),esc(i.job_role),i.type]))}</div>`, vi)}</div>
+    <div class="col-12">${P('<span><i class="bi bi-lightning-charge-fill me-1 text-primary"></i>Recent Activity</span>', d.recent_activity.slice(0,5).map(a=>`<div class="li"><span class="avatar" style="background:${(ICON[a.new_status]||[0,'#2563eb'])[1]}"><i class="bi bi-${(ICON[a.new_status]||['file-earmark'])[0]}"></i></span><div><b>${esc(a.candidate)}</b> moved to ${a.new_status}<br><small class="text-muted">${fd(a.created_at)}</small></div></div>`).join('')||'<span class="text-muted">None</span>', va)}</div>
+  </div></div></div>`;
+  Chart.defaults.color = '#94a3b8'; Chart.defaults.borderColor = 'rgba(148,163,184,.25)';
+  new Chart($('#don'), {type:'doughnut', data:{labels:d.by_role.map(r=>r.job_role), datasets:[{data:d.by_role.map(r=>r.count), backgroundColor:RC, borderWidth:0}]}, options:{maintainAspectRatio:false, cutout:'68%', plugins:{legend:{display:false}}}});
+  if (sk.top.length) {
+    const bk = ['Fresher','1-3 yrs','3+ yrs'], tot = bk.map(b=>sk.buckets[b].reduce((x,y)=>x+y,0)||1);
+    new Chart($('#stk'), {type:'bar', data:{labels:['Fresher','1-3 yrs','3+ yrs'], datasets:sk.top.map((s,i)=>({label:s, backgroundColor:RC[i], data:bk.map((b,j)=>Math.round(sk.buckets[b][i]*100/tot[j]))}))},
+      options:{maintainAspectRatio:false, scales:{x:{stacked:true}, y:{stacked:true, max:100, ticks:{callback:v=>v+'%'}}}, plugins:{legend:{position:'right', labels:{boxWidth:10}}}}});
+    new Chart($('#rad'), {type:'radar', data:{labels:sk.radar.map(r=>r.skill), datasets:[{data:sk.radar.map(r=>r.count), backgroundColor:'rgba(99,102,241,.25)', borderColor:'#6366f1', pointBackgroundColor:'#06b6d4'}]},
+      options:{maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{r:{beginAtZero:true, ticks:{display:false, precision:0}, grid:{color:'rgba(148,163,184,.25)'}, angleLines:{color:'rgba(148,163,184,.25)'}}}}});
+  }
+})();
+</script></body></html>

@@ -1,0 +1,38 @@
+{
+ "brands": [
+  "../assets/home/brands/01-dairy.jpg",
+  "../assets/home/brands/02-bhavan.jpg"
+ ],
+ "hero": [
+  "../assets/home/hero/00-dairy.jpg",
+  "../assets/home/hero/01-milk.jpg",
+  "../assets/home/hero/02-curd.jpg"
+ ],
+ "products": [
+  "../assets/home/products/01-Milk-FCM-500ml.jpg",
+  "../assets/home/products/02-Milk-GCM-500ml.jpg",
+  "../assets/home/products/03-Milk-LITE-500ml.jpg",
+  "../assets/home/products/04-Milk-SM-500ml.jpg",
+  "../assets/home/products/05-Milk-TM-500ml.jpg",
+  "../assets/home/products/06-Cow-Milk-500ml.jpg",
+  "../assets/home/products/07-Curd-DTM-500g.jpg",
+  "../assets/home/products/08-Curd-200g-DTM.jpg",
+  "../assets/home/products/09-fresh-curd-cups-150g-.jpg",
+  "../assets/home/products/10-Curd-200g-TM.jpg",
+  "../assets/home/products/11-Curd-TM-500g.jpg",
+  "../assets/home/products/12-paneer.jpg",
+  "../assets/home/products/13-ghee.jpg",
+  "../assets/home/products/14-khova.jpg",
+  "../assets/home/products/15-skimmed-milk-powder.jpg",
+  "../assets/home/products/16-butter-milk.jpg",
+  "../assets/home/products/17-lassi.jpg"
+ ],
+ "showcase": [
+  "../assets/home/showcase/01-paneer-curry.jpg",
+  "../assets/home/showcase/02-veg-thali.jpg",
+  "../assets/home/showcase/03-traditional-sweets.jpg",
+  "../assets/home/showcase/04-veg-curry.jpg",
+  "../assets/home/showcase/05-fried-snacks.jpg",
+  "../assets/home/showcase/06-sweet-delights.jpg"
+ ]
+}

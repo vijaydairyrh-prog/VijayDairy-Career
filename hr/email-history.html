@@ -1,0 +1,82 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Email History</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"><link href="../assets/style.css?v=20261012" rel="stylesheet"><link rel="icon" href="../assets/vijay-logo.png"></head><body>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script><script src="../assets/config.js"></script><script src="../assets/app.js?v=20261011"></script><script>
+
+layout('email-history'); let page = 1;
+$('#content').innerHTML = `<h4>Email History</h4><div class="row g-2 mb-3"><div class="col-md-4"><input id="f_q" class="form-control" placeholder="Candidate / email / subject"></div>
+<div class="col-md-2"><select id="f_st" class="form-select"><option value="">All</option><option>Pending</option><option>Sent</option><option>Failed</option></select></div>
+<div class="col-md-2"><input type="date" id="f_start" class="form-control"></div><div class="col-md-2"><input type="date" id="f_end" class="form-control"></div><div class="col-md-2"><button class="btn btn-primary w-100" onclick="page=1;load()">Filter</button></div></div>
+<div class="card"><div class="table-responsive" id="tbl"></div></div><div id="pg"></div>`;
+async function load() {
+  const p = new URLSearchParams({page}); [['q','f_q'],['status','f_st'],['start','f_start'],['end','f_end']].forEach(([k,i]) => { const v = $('#'+i).value; if (v) p.set(k, v); });
+  p.set('latest','1'); const d = await api('/email-history/?' + p);
+  window.mails = {}; d.results.forEach(e => window.mails[e.id] = e); window.mailIds = d.results.map(e => e.id);
+  const SB = s => `<span class="badge bg-${{Sent:'success',Pending:'warning text-dark',Sending:'info'}[s]||'danger'}">${s}</span>`;
+  $('#tbl').innerHTML = table(['Candidate','Email','Subject','Latest Update','Mail Status','Date','Action'], d.results.map(e => [`<b>${esc(e.candidate)}</b>`, esc(e.to_email), esc(e.subject), badge(e.resume_status), SB(e.status), e.status=='Pending'?'Sends at '+fd(e.scheduled_at):fd(e.sent_at),
+    `<div class="dropdown"><button class="btn btn-sm btn-light border" data-bs-toggle="dropdown" data-bs-popper-config='{"strategy":"fixed"}' title="Actions"><i class="bi bi-three-dots-vertical"></i></button><ul class="dropdown-menu dropdown-menu-end"><li><a class="dropdown-item" href="#" onclick="viewMail(${e.id});return false"><i class="bi bi-eye me-2"></i>View</a></li><li><a class="dropdown-item text-danger" href="#" onclick="delMail(${e.id});return false"><i class="bi bi-trash me-2"></i>Delete</a></li></ul></div>`]));
+  pager(d, n => { page = n; load(); });
+}
+load();
+</script>
+<style>
+.mail-card{background:#fff;color:#1f2937;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;display:flex;flex-direction:column;max-height:calc(100vh - 3.5rem)}
+.mail-top,.mail-act{flex:none}
+.mail-scroll{flex:1 1 auto;min-height:0;overflow-y:auto}
+.mail-top{color:#fff;padding:12px 20px;font-weight:600;background:#1e3a6e}
+.mail-meta{padding:14px 20px;border-bottom:1px solid #e5e7eb;font-size:14px;background:#f8fafc}
+.mail-meta div{display:flex;gap:8px;margin-bottom:4px}.mail-meta b{min-width:70px;color:#64748b;font-weight:600}
+.mail-cand{padding:10px 20px;background:#eef2ff;font-size:13px;display:flex;flex-wrap:wrap;gap:6px 18px;border-bottom:1px solid #e5e7eb}
+.mail-err{margin:14px 20px 0;padding:10px 14px;background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;border-radius:8px;font-size:13px;word-break:break-word}
+.mail-body{padding:18px 20px;font-size:15px;line-height:1.7;white-space:pre-wrap;word-break:break-word}
+.mail-foot{text-align:center;padding:4px 20px 18px;font-size:14px}
+.mail-sign{padding:0 20px 18px;font-size:13px;color:#64748b;border-top:1px dashed #e5e7eb;margin:0 20px;padding-top:12px}
+.mail-act{padding:12px 20px;background:#f8fafc;border-top:1px solid #e5e7eb;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+</style>
+<div class="modal fade" id="mailModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered modal-lg"><div class="modal-content" style="background:transparent;border:0">
+<div class="modal-body p-0"><div class="mail-card">
+<div class="mail-top d-flex justify-content-between align-items-center" id="mailTop"><span class="d-flex align-items-center gap-2"><img src="../assets/vijay-logo.png" alt="Vijay" style="height:34px;background:#fff;border-radius:6px;padding:3px"> Email Preview</span><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+<div class="mail-scroll"><div id="mailErr"></div>
+<div class="text-center pt-3"><img src="../assets/vijay-logo.png" alt="Vijay" style="height:70px"></div>
+<div class="mail-body" id="mailBody"></div>
+<div class="mail-foot"><a href="mailto:connecthr@vijaymilk.in">connecthr@vijaymilk.in</a></div></div>
+<div class="mail-act"><button class="btn btn-sm btn-outline-secondary" onclick="mailNav(-1)">&larr; Prev</button><button class="btn btn-sm btn-outline-secondary" onclick="mailNav(1)">Next &rarr;</button>
+<span class="ms-auto"></span><button class="btn btn-sm btn-outline-primary" onclick="copyMail()">Copy</button><button class="btn btn-sm btn-danger d-none" id="resendBtn" onclick="resendMail()">Resend</button><button class="btn btn-sm btn-outline-danger" onclick="delMail(curMail.id, true)"><i class="bi bi-trash"></i> Delete</button></div>
+</div></div></div></div></div>
+<script>
+let curMail = null;
+const MAIL_COLORS = {Selected:'#16a34a', Rejected:'#dc2626', Shortlisted:'#0891b2', Online:'#2563eb', Offline:'#2563eb'};
+function showMail(id){
+  const e = window.mails[id]; if(!e) return; curMail = e;
+  const m = e.subject.match(/\(([^)]+)\)\s*$/);
+  $('#mailTop').style.background = (m && MAIL_COLORS[m[1]]) || '#1e3a6e';
+  $('#mailErr').innerHTML = e.status=='Failed' ? `<div class="mail-err"><b>Failed reason:</b> ${esc(e.error || 'Not recorded (this mail failed before error logging was added). Check the email settings in .env.')}</div>` : '';
+  $('#mailBody').innerHTML = esc(e.message).replace(/(https?:\/\/[^\s<]+)/g,'<a href="$1" target="_blank" rel="noopener">$1</a>');
+  $('#resendBtn').classList.toggle('d-none', e.status!='Failed');
+}
+async function viewMail(id){
+  const e = window.mails[id]; if (!e) return;
+  try { const d = await api('/email-history/?resume=' + e.resume); d.results.forEach(x => window.mails[x.id] = x); window.modalIds = d.results.map(x => x.id); } catch (x) { window.modalIds = [id]; }
+  showMail(id); bootstrap.Modal.getOrCreateInstance('#mailModal').show();
+}
+function mailNav(d){ const ids = window.modalIds || window.mailIds; const i = ids.indexOf(curMail.id) + d; if (i >= 0 && i < ids.length) showMail(ids[i]); }
+function copyMail(){ navigator.clipboard.writeText(curMail.message).then(() => toast('Message copied')); }
+async function delMail(id, fromModal){
+  if (!confirm('Indha email history-a delete pannattuma?')) return;
+  try {
+    await api('/email-history/' + id + '/', {method:'DELETE'}); toast('Email deleted');
+    if (fromModal) bootstrap.Modal.getOrCreateInstance('#mailModal').hide();
+    if (window.mailIds.length === 1 && page > 1) page--;   // last row of the page deleted -> go back one page
+    load();
+  } catch (x) { toast(fe(x), 'danger'); }
+}
+async function resendMail(){
+  const b = $('#resendBtn'); b.disabled = true; b.textContent = 'Sending...';
+  try {
+    const r = await api('/email-history/' + curMail.id + '/resend/', {method:'POST'});
+    toast(r.status=='Sent' ? 'Email sent' : 'Resend failed: ' + esc(r.error||'')  , r.status=='Sent' ? 'success' : 'danger');
+    await load(); showMail(curMail.id);
+  } catch (x) { toast(x.detail || 'Could not resend', 'danger'); }
+  b.disabled = false; b.textContent = 'Resend';
+}
+</script>
+</body></html>
