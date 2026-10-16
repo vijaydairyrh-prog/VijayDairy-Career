@@ -126,7 +126,7 @@ const FOOT = {
   about: 'Vijay Dairy & Farm Products (P) Ltd has a committed vision to procure quality milk from the farmers and produce milk and milk products through superior technology and process and makes it available to customers at competitive price.',
   address: 'Trichy Thuraiyur main road, Peramangalam, Trichy. Tamil Nadu 621006',
   web: 'www.vijaymilk.com', phone: '+91 8870053444', email: 'connecthr@vijaymilk.in',
-  copy: '\u00a9 2018. All Rights Reserved By Vijay Dairy & Farm Products (P) Ltd', dev: 'Scoto.in'
+  copy: '\u00a9 2018. All Rights Reserved By Vijay Dairy & Farm Products (P) Ltd', dev: 'Raja'
 };
 function siteFooter(barOnly = false) {     // barOnly = true -> only the copyright line (used in the HR dashboard)
   const bar = `<div class="sf-bot"><span>${FOOT.copy}</span><span>Design &amp; Developed by <b>${FOOT.dev}</b></span></div>`;
